@@ -1,0 +1,62 @@
+ngx_feature="libmono-2.0"
+ngx_feature_name=
+ngx_feature_run=no
+ngx_feature_incs="#include <mono/jit/jit.h>
+    #include <mono/metadata/assembly.h>
+    #include <mono/metadata/object.h>
+    #include <mono/metadata/mono-config.h>
+    #include <mono/metadata/appdomain.h>
+    #include <mono/metadata/threads.h>"
+ngx_feature_path="/usr/include/mono-2.0"
+ngx_feature_libs="-L/usr/lib64 -lmono-2.0 -lm -lrt -ldl -lpthread -lstdc++" 
+ngx_feature_test="mono_set_dirs(0, 0);
+    mono_config_parse(0);"
+
+. auto/feature
+
+if [ $ngx_found = yes ]; then
+    CORE_INCS="$CORE_INCS $ngx_feature_path"
+    CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
+else
+    cat << END
+
+$0: error: the HTTP MONO module requires the libmono-2.0
+libraries. You can either do not enable the module or install the libraries.
+
+END
+    exit 1
+fi
+
+ngx_addon_name=ngx_http_mono_module
+
+HTTP_MONO_DEPS=" \
+			"
+HTTP_MONO_SRCS=" \
+                        $ngx_addon_dir/ngx_http_mono_module.c \
+                        "
+
+if [ -f auto/module ] ; then
+    ngx_module_incs=$ngx_addon_dir
+    ngx_module_deps=$HTTP_MONO_DEPS
+
+    if [ $ngx_module_link = DYNAMIC ] ; then
+        ngx_module_name=$ngx_addon_name
+        ngx_module_srcs=$HTTP_MONO_SRCS
+
+        . auto/module
+
+    else
+        ngx_module_type=HTTP
+        ngx_module_name=$ngx_addon_name
+        ngx_module_incs=
+        ngx_module_deps=
+        ngx_module_srcs=$HTTP_MONO_SRCS
+
+        . auto/module
+    fi
+else
+    HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
+    CFLAGS="$CFLAGS -I$ngx_addon_dir"
+    NGX_ADDON_DEPS="$NGX_ADDON_DEPS $HTTP_MONO_DEPS"
+    NGX_ADDON_SRCS="$NGX_ADDON_SRCS $HTTP_MONO_SRCS"
+fi

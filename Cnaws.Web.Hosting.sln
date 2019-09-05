@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cnaws.Web.Hosting", "Cnaws.Web.Hosting\Cnaws.Web.Hosting.csproj", "{0AD479F6-D02B-4C3A-9A08-6218428C1D9A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nginx-mono-module", "nginx-mono-module", "{B0A88836-F56D-4E28-8E53-B1178453F04F}"
+	ProjectSection(SolutionItems) = preProject
+		nginx-mono-module\config = nginx-mono-module\config
+		nginx-mono-module\ngx_http_mono_module.c = nginx-mono-module\ngx_http_mono_module.c
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0AD479F6-D02B-4C3A-9A08-6218428C1D9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AD479F6-D02B-4C3A-9A08-6218428C1D9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AD479F6-D02B-4C3A-9A08-6218428C1D9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AD479F6-D02B-4C3A-9A08-6218428C1D9A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BE35A9F-AE21-4D23-BCC6-DBDCF6CFAA1B}
+	EndGlobalSection
+EndGlobal
