@@ -1,7 +1,7 @@
 # nginx-mono-module
 一个 nginx 的 .net 扩展。
 
-# 使用说明，以 CentOS 7 为例
+## 使用说明，以 CentOS 7 为例
 
 ### 安装 mono
 ```cmd
