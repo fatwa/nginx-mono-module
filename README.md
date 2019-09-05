@@ -25,8 +25,8 @@ make install
 
 ### 把 nginx.service 文件放到 /usr/lib/systemd/system/ 目录下
 ```cmd
-systenctl enable nginx
-systenctl start nginx
+systemctl enable nginx
+systemctl start nginx
 ```
 可能会需要为 nginx 创建某些文件夹或设置文件夹权限。
 
