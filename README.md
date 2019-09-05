@@ -60,7 +60,7 @@ http {
         }
 
         location /uploads/ {
-            root /var/www/livechat;
+            root /var/www/site;
         }
 
         ...
