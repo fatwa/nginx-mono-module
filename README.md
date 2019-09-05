@@ -38,20 +38,20 @@ user  nginx nginx;
 
 http {
     
-	...
+    ...
 
-	mono_lib_and_etc  /usr/lib /etc /usr/lib/cnaws;
+    mono_lib_and_etc  /usr/lib /etc /usr/lib/cnaws;
 
-	...
+    ...
 
-	server {
+    server {
         listen       80;
         server_name  mydomain;
 
         mono_root_and_vroot /var/www/site /;
     }
 
-	server {
+    server {
         listen       80;
         server_name  mydomain;
 
@@ -59,15 +59,15 @@ http {
             mono_root_and_vroot /var/www/site /;
         }
 
-		location /uploads/ {
+        location /uploads/ {
             root /var/www/livechat;
         }
 
-		...
+        ...
 
     }
 
-	...
+    ...
 
 }
 ```
