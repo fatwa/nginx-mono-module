@@ -10,10 +10,10 @@ su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /et
 yum install mono-devel libmono-2_0-dev
 ```
 
-### 编译 Cnaws.Web.Hodting 项目
-把生成的 Cnaws.Web.Hodting.dll 放到 /usr/lib/cnaws/ 目录下。
+### 编译 Cnaws.Web.Hosting 项目
+把生成的 Cnaws.Web.Hosting.dll 放到 /usr/lib/cnaws/ 目录下。
 ```cmd
-gacutil -i /usr/lib/cnaws/Cnaws.Web.Hodting.dll
+gacutil -i /usr/lib/cnaws/Cnaws.Web.Hosting.dll
 ```
 
 ### 编译 nginx (根据实际情况自行修改)
