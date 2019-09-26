@@ -48,9 +48,9 @@ namespace Cnaws.Web.Hosting
                         _watcher.IncludeSubdirectories = true;
                         _watcher.NotifyFilter = NotifyFilters.LastWrite;
                         _watcher.Deleted += OnChanged;
-                        _watcher.Deleted += OnChanged;
-                        _watcher.Deleted += OnChanged;
-                        _watcher.Deleted += OnChanged;
+                        _watcher.Created += OnChanged;
+                        _watcher.Changed += OnChanged;
+                        _watcher.Renamed += OnChanged;
                         _watcher.Error += OnError;
                         _watcher.EnableRaisingEvents = true;
                     }
@@ -64,9 +64,9 @@ namespace Cnaws.Web.Hosting
                     {
                         _watcher.EnableRaisingEvents = false;
                         _watcher.Deleted -= OnChanged;
-                        _watcher.Deleted -= OnChanged;
-                        _watcher.Deleted -= OnChanged;
-                        _watcher.Deleted -= OnChanged;
+                        _watcher.Created -= OnChanged;
+                        _watcher.Changed -= OnChanged;
+                        _watcher.Renamed -= OnChanged;
                         _watcher.Error -= OnError;
                         _watcher.Dispose();
                         _watcher = null;

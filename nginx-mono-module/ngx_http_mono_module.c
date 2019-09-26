@@ -111,24 +111,14 @@ typedef struct {
 	ngx_flag_t						enabled;
 	ngx_str_t						root;
 	ngx_str_t						vroot;
-#ifdef V1
-	ngx_str_t						site;
-	ngx_flag_t						inited;
-#else
 	char							host[36];
-#endif
 	ngx_atomic_t					lock;
 } ngx_http_mono_srv_conf_t;
 typedef struct {
 	ngx_flag_t						enabled;
 	ngx_str_t						root;
 	ngx_str_t						vroot;
-#ifdef V1
-	ngx_str_t						site;
-	ngx_flag_t						inited;
-#else
 	char							host[36];
-#endif
 	ngx_atomic_t					lock;
 } ngx_http_mono_loc_conf_t;
 
@@ -242,24 +232,6 @@ ngx_http_mono_invoke(ngx_http_mono_main_conf_t *mmcf, MonoMethod *method, MonoOb
 	return result;
 }
 
-#ifdef V1
-static ngx_flag_t
-ngx_http_mono_create_instance(ngx_http_mono_main_conf_t *mmcf, ngx_str_t site, ngx_str_t root, ngx_str_t vroot)
-{
-	/**instance = mono_object_new(mmcf->mono, mmcf->mclass);
-	if (!(*instance)) return NGX_ERROR;
-	mono_runtime_object_init(*instance);*/
-
-	void* args[3];
-	args[0] = GET_MONO_STR(site.data);
-	args[1] = GET_MONO_STR(root.data);
-	args[2] = GET_MONO_STR(vroot.data);
-
-	MonoObject* result = ngx_http_mono_invoke(mmcf, mmcf->reg, 0, args);
-	if (result) return (ngx_flag_t)*(int*)mono_object_unbox(result);
-	return 0;
-}
-#else
 static void
 ngx_http_mono_create_instance(ngx_http_mono_main_conf_t *mmcf, ngx_str_t root, ngx_str_t vroot, char *buf)
 {
@@ -279,23 +251,7 @@ ngx_http_mono_create_instance(ngx_http_mono_main_conf_t *mmcf, ngx_str_t root, n
 		}
 	}
 }
-#endif
 
-#ifdef V1
-static ngx_flag_t
-ngx_http_mono_process(ngx_http_mono_main_conf_t *mmcf, ngx_str_t site, ngx_http_request_t *r, ngx_chain_t *pout, ngx_str_t root, ngx_str_t vroot)
-{
-	void* args[5];
-	args[0] = GET_MONO_STR(site.data);
-	args[1] = GET_MONO_STR(root.data);
-	args[2] = GET_MONO_STR(vroot.data);
-	args[3] = &r;
-	args[4] = &pout;
-	MonoObject* result = ngx_http_mono_invoke(mmcf, mmcf->method, 0, args);
-	if (result) return (ngx_flag_t)*(int*)mono_object_unbox(result);
-	return 0;
-}
-#else
 static ngx_flag_t
 ngx_http_mono_process(ngx_http_mono_main_conf_t *mmcf, const char *id, ngx_http_request_t *r, ngx_chain_t *pout)
 {
@@ -307,17 +263,7 @@ ngx_http_mono_process(ngx_http_mono_main_conf_t *mmcf, const char *id, ngx_http_
 	if (result) return (ngx_flag_t)*(int*)mono_object_unbox(result);
 	return 0;
 }
-#endif
 
-#ifdef V1
-static void
-ngx_http_mono_dispose_instance(ngx_http_mono_main_conf_t *mmcf, ngx_str_t site)
-{
-	void* args[1];
-	args[0] = GET_MONO_STR(site.data);
-	ngx_http_mono_invoke(mmcf, mmcf->unreg, 0, args);
-}
-#else
 static void
 ngx_http_mono_dispose_instance(ngx_http_mono_main_conf_t *mmcf, char *id)
 {
@@ -326,35 +272,7 @@ ngx_http_mono_dispose_instance(ngx_http_mono_main_conf_t *mmcf, char *id)
 	ngx_http_mono_invoke(mmcf, mmcf->unreg, 0, args);
 	id[0] = '\0';
 }
-#endif
 
-//#define MONO_INIT_APPDOMAIN(conf) if (!ngx_http_mono_create_instance(mmcf, conf->site, mmcf->reg, conf->root, conf->vroot)) return NGX_ERROR
-//#define MONO_UNINIT_APPDOMAIN(conf) ngx_http_mono_dispose_instance(mmcf, conf->site)
-#ifdef V1
-#define MONO_PROCESS_REQUEST(conf) if (!conf->inited) { \
-		ngx_rwlock_wlock(&conf->lock); \
-		if (!conf->inited) { \
-			if (ngx_http_mono_create_instance(mmcf, conf->site, conf->root, conf->vroot)) { \
-				conf->inited = 1; \
-			} \
-		} \
-		ngx_rwlock_unlock(&conf->lock); \
-	} \
-	if (conf->inited) { \
-		ngx_rwlock_rlock(&conf->lock); \
-		if (conf->inited) { \
-			handle = ngx_http_mono_process(mmcf, conf->site, r, pout, conf->root, conf->vroot); \
-		} \
-		ngx_rwlock_unlock(&conf->lock); \
-		if (!handle && conf->inited) { \
-			ngx_rwlock_wlock(&conf->lock); \
-			if (conf->inited) { \
-				conf->inited = 0; \
-			} \
-			ngx_rwlock_unlock(&conf->lock); \
-		} \
-	}
-#else
 #define MONO_PROCESS_REQUEST(conf) if (!conf->host[0]) { \
 		ngx_rwlock_wlock(&conf->lock); \
 		if (!conf->host[0]) { \
@@ -376,7 +294,6 @@ ngx_http_mono_dispose_instance(ngx_http_mono_main_conf_t *mmcf, char *id)
 			ngx_rwlock_unlock(&conf->lock); \
 		} \
 	}
-#endif
 
 static MonoString *GetRequestHeader(ngx_http_request_t *request)
 {
@@ -809,22 +726,14 @@ ngx_http_mono_init_process(ngx_cycle_t *cycle)
 #endif
 			return NGX_ERROR;
 		}
-#ifdef V1
-		mmcf->reg = mono_class_get_method_from_name(mclass, "Register", 3);
-#else
 		mmcf->reg = mono_class_get_method_from_name(mclass, "Register", 2);
-#endif
 		if (!mmcf->reg) {
 #ifdef CONSOLE
 			printf("failed to get Mono method \"Cnaws.Web.Hosting.Mono.Register\"\r\n");
 #endif
 			return NGX_ERROR;
 		}
-#ifdef V1
-		mmcf->method = mono_class_get_method_from_name(mclass, "ProcessRequest", 5);
-#else
 		mmcf->method = mono_class_get_method_from_name(mclass, "ProcessRequest", 3);
-#endif
 		if (!mmcf->method) {
 #ifdef CONSOLE
 			printf("failed to get Mono method \"Cnaws.Web.Hosting.Mono.ProcessRequest\"\r\n");
@@ -1075,18 +984,6 @@ ngx_http_mono_srv_set_root_and_vroot(ngx_conf_t *cf, ngx_command_t *cmd, void *c
 	len += 1;
 	mscf->vroot.len = len;
 
-#ifdef V1
-	len = mscf->root.len + mscf->vroot.len + 1;
-	mscf->site.data = ngx_pcalloc(cf->pool, (len + 1) * sizeof(u_char));
-	if (!mscf->site.data) {
-		return NGX_CONF_ERROR;
-	}
-	ngx_memcpy(mscf->site.data, mscf->root.data, mscf->root.len);
-	mscf->site.data[mscf->root.len] = '\n';
-	ngx_memcpy(mscf->site.data + mscf->root.len + 1, mscf->vroot.data, mscf->vroot.len);
-	mscf->site.len = len;
-#endif
-
 	mscf->enabled = 1;
 
 	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
@@ -1141,18 +1038,6 @@ ngx_http_mono_loc_set_root_and_vroot(ngx_conf_t *cf, ngx_command_t *cmd, void *c
 	mlcf->vroot.data[len] = '/';
 	len += 1;
 	mlcf->vroot.len = len;
-
-#ifdef V1
-	len = mlcf->root.len + mlcf->vroot.len + 1;
-	mlcf->site.data = ngx_pcalloc(cf->pool, (len + 1) * sizeof(u_char));
-	if (!mlcf->site.data) {
-		return NGX_CONF_ERROR;
-	}
-	ngx_memcpy(mlcf->site.data, mlcf->root.data, mlcf->root.len);
-	mlcf->site.data[mlcf->root.len] = '\n';
-	ngx_memcpy(mlcf->site.data + mlcf->root.len + 1, mlcf->vroot.data, mlcf->vroot.len);
-	mlcf->site.len = len;
-#endif
 
 	mlcf->enabled = 1;
 
